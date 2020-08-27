@@ -1,4 +1,5 @@
 #include <torch/csrc/jit/runtime/profiling_graph_executor_impl.h>
+#include <torch/csrc/jit/passes/inliner.h>
 #include <torch/csrc/jit/jit_log.h>
 #include <torch/csrc/jit/passes/bailout_graph.h>
 #include <torch/csrc/jit/passes/batch_mm.h>
@@ -319,8 +320,10 @@ void ProfilingGraphExecutorImpl::runProfilingOptimizations(
 void ProfilingGraphExecutorImpl::runProfilingInsensitiveOptimizations(
     std::shared_ptr<Graph>& graph) {
   GRAPH_DUMP(
-      "Before ClearProfilingInformation (beginning of runProfilingInsensitiveOptimizations)",
+      "Before inlining (beginning of runProfilingInsensitiveOptimizations)",
       graph);
+  Inline(*graph);
+  GRAPH_DUMP("After inlining, before ClearProfilingInformation", graph);
   ClearProfilingInformation(graph);
   GRAPH_DUMP("After ClearProfilingInformation, before LowerGradOf", graph);
   LowerGradOf(*graph);
